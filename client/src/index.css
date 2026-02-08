@@ -47,3 +47,44 @@ button {
   cursor: pointer;
 }
 
+.chat-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #020617;
+}
+
+.chat-header {
+  padding: 1rem;
+  background: #020617;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #1e293b;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.chat-message {
+  margin-bottom: 0.5rem;
+}
+
+.empty {
+  opacity: 0.6;
+}
+
+.chat-input {
+  display: flex;
+  padding: 1rem;
+  gap: 0.5rem;
+  border-top: 1px solid #1e293b;
+}
+
+.chat-input input {
+  flex: 1;
+}
+

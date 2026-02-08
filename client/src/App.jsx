@@ -1,15 +1,26 @@
 import { useState } from "react";
+import Chat from "./Chat";
 
 function App() {
   const [username, setUsername] = useState("");
+  const [loggedIn, setLoggedIn] = useState(false);
 
   const handleLogin = () => {
     if (!username.trim()) {
       alert("Please enter a username");
       return;
     }
-    alert(`Logged in as ${username}`);
+    setLoggedIn(true);
   };
+
+  const handleLogout = () => {
+    setUsername("");
+    setLoggedIn(false);
+  };
+
+  if (loggedIn) {
+    return <Chat username={username} onLogout={handleLogout} />;
+  }
 
   return (
     <div className="app">
