@@ -18,18 +18,21 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
-  socket.on("message", (data) => {
-    // send message to all connected clients
-    io.emit("message", data);
+  socket.on("join", (username) => {
+    socket.username = username;
+    console.log(`${username} joined`);
+  });
+
+  socket.on("send-message", (data) => {
+    io.emit("receive-message", data);
   });
 
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
+    console.log("User disconnected:", socket.username);
   });
 });
 
-const PORT = 5000;
-server.listen(PORT, () => {
-  console.log(`EchoCrypt server running on port ${PORT}`);
+server.listen(5000, () => {
+  console.log("Server running on port 5000");
 });
 

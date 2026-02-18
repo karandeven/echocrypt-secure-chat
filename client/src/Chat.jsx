@@ -1,20 +1,40 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:5000");
 
 function Chat({ username, onLogout }) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
 
+  useEffect(() => {
+    socket.emit("join", username);
+
+    socket.on("receive-message", (data) => {
+      setMessages((prev) => [...prev, data]);
+    });
+
+    return () => {
+      socket.off("receive-message");
+    };
+  }, [username]);
+
   const sendMessage = () => {
     if (!message.trim()) return;
 
-    setMessages([...messages, { user: username, text: message }]);
+    const msgData = {
+      user: username,
+      text: message,
+    };
+
+    socket.emit("send-message", msgData);
     setMessage("");
   };
 
   return (
     <div className="chat-container">
       <div className="chat-header">
-        <span>EchoCrypt Chat</span>
+        <span>EchoCrypt</span>
         <button onClick={onLogout}>Logout</button>
       </div>
 
@@ -36,6 +56,7 @@ function Chat({ username, onLogout }) {
           placeholder="Type a message"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
         />
         <button onClick={sendMessage}>Send</button>
       </div>
