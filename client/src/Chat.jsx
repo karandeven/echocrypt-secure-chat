@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import { io } from "socket.io-client";
-
-const socket = io("http://localhost:5000");
+import socket from "./socket";
 
 function Chat({ username, onLogout }) {
   const [message, setMessage] = useState("");
@@ -10,12 +8,12 @@ function Chat({ username, onLogout }) {
   useEffect(() => {
     socket.emit("join", username);
 
-    socket.on("receive-message", (data) => {
+    socket.on("message", (data) => {
       setMessages((prev) => [...prev, data]);
     });
 
     return () => {
-      socket.off("receive-message");
+      socket.off("message");
     };
   }, [username]);
 
@@ -27,7 +25,7 @@ function Chat({ username, onLogout }) {
       text: message,
     };
 
-    socket.emit("send-message", msgData);
+    socket.emit("message", msgData);
     setMessage("");
   };
 

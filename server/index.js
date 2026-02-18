@@ -10,8 +10,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST"],
+    origin: "*",
   },
 });
 
@@ -20,11 +19,14 @@ io.on("connection", (socket) => {
 
   socket.on("join", (username) => {
     socket.username = username;
-    console.log(`${username} joined`);
+    console.log(username, "joined");
   });
 
-  socket.on("send_message", (data) => {
-    io.emit("receive_message", {
+  socket.on("message", (data) => {
+    console.log("Message received:", data);
+
+    // 🔥 THIS WAS MISSING / WRONG BEFORE
+    io.emit("message", {
       user: data.user,
       text: data.text,
     });
