@@ -23,8 +23,11 @@ io.on("connection", (socket) => {
     console.log(`${username} joined`);
   });
 
-  socket.on("send-message", (data) => {
-    io.emit("receive-message", data);
+  socket.on("send_message", (data) => {
+    io.emit("receive_message", {
+      user: data.user,
+      text: data.text,
+    });
   });
 
   socket.on("disconnect", () => {
