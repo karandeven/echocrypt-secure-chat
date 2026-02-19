@@ -5,27 +5,29 @@ function Chat({ username, onLogout }) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
 
+  // 🔒 JOIN ONCE (critical)
   useEffect(() => {
     socket.emit("join", username);
 
-    socket.on("message", (data) => {
+    const handleMessage = (data) => {
       setMessages((prev) => [...prev, data]);
-    });
+    };
+
+    socket.on("message", handleMessage);
 
     return () => {
-      socket.off("message");
+      socket.off("message", handleMessage);
     };
   }, [username]);
 
   const sendMessage = () => {
     if (!message.trim()) return;
 
-    const msgData = {
+    socket.emit("message", {
       user: username,
       text: message,
-    };
+    });
 
-    socket.emit("message", msgData);
     setMessage("");
   };
 
