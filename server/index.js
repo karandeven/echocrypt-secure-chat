@@ -11,35 +11,39 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: "*",
-    methods: ["GET", "POST"],
   },
 });
+
+// 🟢 In-memory user registry
+const users = new Map();
 
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
-  // User joins with username
   socket.on("join", (username) => {
-    socket.username = username;
+    users.set(socket.id, username);
+
     console.log(username, "joined");
+
+    io.emit("online-users", Array.from(users.values()));
   });
 
-  // Receive message from one client → broadcast to all
   socket.on("message", (data) => {
-    console.log("Message received:", data);
-
-    io.emit("message", {
-      user: data.user,
-      text: data.text,
-    });
+    io.emit("message", data);
   });
 
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.username || socket.id);
+    const username = users.get(socket.id);
+
+    if (username) {
+      users.delete(socket.id);
+      console.log(username, "disconnected");
+
+      io.emit("online-users", Array.from(users.values()));
+    }
   });
 });
 
 server.listen(5000, () => {
   console.log("Server running on port 5000");
 });
-
