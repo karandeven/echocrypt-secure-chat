@@ -1,31 +1,32 @@
-import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
+import { useState } from "react";
 import Chat from "./Chat";
-
-const theme = createTheme({
-  palette: {
-    mode: "dark",
-    primary: {
-      main: "#4f8cff",
-    },
-    background: {
-      default: "#0f172a",
-      paper: "#1e293b",
-    },
-  },
-  shape: {
-    borderRadius: 12,
-  },
-  typography: {
-    fontFamily: "Inter, Roboto, sans-serif",
-  },
-});
+import Login from "./Login";
+import Register from "./Register";
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    !!localStorage.getItem("token")
+  );
+  const [showRegister, setShowRegister] = useState(false);
+
+  if (isLoggedIn) {
+    return <Chat />;
+  }
+
+  if (showRegister) {
+    return (
+      <Register
+        onRegister={() => setIsLoggedIn(true)}
+        switchToLogin={() => setShowRegister(false)}
+      />
+    );
+  }
+
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Chat />
-    </ThemeProvider>
+    <Login
+      onLogin={() => setIsLoggedIn(true)}
+      switchToRegister={() => setShowRegister(true)}
+    />
   );
 }
 

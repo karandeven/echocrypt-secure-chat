@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import socket from "./socket";
+import { connectSocket, getSocket } from "./socket";
 import { Box, Typography, TextField, Button } from "@mui/material";
 
 function Chat() {
@@ -12,29 +12,54 @@ function Chat() {
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    // Fetch old messages
-    fetch("http://localhost:5000/messages")
-      .then((res) => res.json())
-      .then((data) => {
+  const token = localStorage.getItem("token");
+
+  fetch("http://localhost:5000/messages", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (Array.isArray(data)) {
         setMessages(data);
-      })
-      .catch((err) => console.error("Fetch error:", err));
+      } else if (
+        data.message === "No token provided" ||
+        data.message === "Unauthorized"
+      ) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("username");
+        window.location.reload();
+      } else {
+        setMessages([]);
+      }
+    })
+    .catch((err) => console.error("Fetch error:", err));
 
-    socket.emit("join", username);
+  const socket = connectSocket();
+  if (!socket) return;
 
-    socket.on("message", (data) => {
-      setMessages((prev) => [...prev, data]);
-    });
+  socket.on("connect_error", () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    window.location.reload();
+  });
 
-    socket.on("online-users", (users) => {
-      setOnlineUsers(users);
-    });
+  socket.emit("join");
 
-    return () => {
-      socket.off("message");
-      socket.off("online-users");
-    };
-  }, [username]);
+  socket.on("message", (data) => {
+    setMessages((prev) => [...prev, data]);
+  });
+
+  socket.on("online-users", (users) => {
+    setOnlineUsers(users);
+  });
+
+  return () => {
+    socket.off("message");
+    socket.off("online-users");
+  };
+}, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -43,11 +68,12 @@ function Chat() {
   const sendMessage = () => {
     if (!input.trim()) return;
 
-    socket.emit("sendMessage", {
-      username,
-      text: input,
-    });
+    const socket = getSocket();
+if (!socket) return;
 
+socket.emit("sendMessage", {
+  text: input,
+});
     setInput("");
   };
 
@@ -63,7 +89,21 @@ function Chat() {
 
       {/* Chat Area */}
       <Box sx={{ flex: 1, p: 2, display: "flex", flexDirection: "column" }}>
-        <Typography variant="h5">EchoCrypt</Typography>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+  <Typography variant="h5">EchoCrypt</Typography>
+
+  <Button
+    variant="outlined"
+    color="error"
+    onClick={() => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("username");
+      window.location.reload();
+    }}
+  >
+    Logout
+  </Button>
+</Box>
 
         <Box sx={{ flex: 1, overflowY: "auto", my: 2 }}>
           {messages.map((msg, index) => (
