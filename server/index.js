@@ -36,6 +36,19 @@ app.get("/", (req, res) => {
   res.send("EchoCrypt Server Running 🚀");
 });
 
+
+/* ================= Fetch Old Messages ================= */
+
+app.get("/messages", async (req, res) => {
+  try {
+    const messages = await Message.find().sort({ createdAt: 1 });
+    res.json(messages);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch messages" });
+  }
+});
+
+
 /* ================= Socket ================= */
 
 io.on("connection", (socket) => {

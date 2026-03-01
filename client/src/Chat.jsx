@@ -12,6 +12,14 @@ function Chat() {
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
+    // Fetch old messages
+    fetch("http://localhost:5000/messages")
+      .then((res) => res.json())
+      .then((data) => {
+        setMessages(data);
+      })
+      .catch((err) => console.error("Fetch error:", err));
+
     socket.emit("join", username);
 
     socket.on("message", (data) => {
@@ -36,7 +44,7 @@ function Chat() {
     if (!input.trim()) return;
 
     socket.emit("sendMessage", {
-      username: username,
+      username,
       text: input,
     });
 
@@ -44,20 +52,20 @@ function Chat() {
   };
 
   return (
-    <Box sx={{ display: "flex", height: "100vh" }}>
-      <Box sx={{ width: "250px", borderRight: "1px solid #ccc", p: 2 }}>
+    <Box sx={{ height: "100vh", display: "flex" }}>
+      {/* Online Users */}
+      <Box sx={{ width: "20%", borderRight: "1px solid gray", p: 2 }}>
         <Typography variant="h6">Online ({onlineUsers.length})</Typography>
         {onlineUsers.map((user, index) => (
           <Typography key={index}>{user}</Typography>
         ))}
       </Box>
 
-      <Box sx={{ flex: 1, display: "flex", flexDirection: "column", p: 2 }}>
-        <Typography variant="h5" gutterBottom>
-          EchoCrypt
-        </Typography>
+      {/* Chat Area */}
+      <Box sx={{ flex: 1, p: 2, display: "flex", flexDirection: "column" }}>
+        <Typography variant="h5">EchoCrypt</Typography>
 
-        <Box sx={{ flex: 1, overflowY: "auto", mb: 2 }}>
+        <Box sx={{ flex: 1, overflowY: "auto", my: 2 }}>
           {messages.map((msg, index) => (
             <Typography key={index}>
               <strong>{msg.username}:</strong> {msg.text}
@@ -72,7 +80,6 @@ function Chat() {
             placeholder="Type a message..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           />
           <Button variant="contained" onClick={sendMessage}>
             Send
